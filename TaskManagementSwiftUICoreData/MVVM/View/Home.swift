@@ -70,7 +70,7 @@ struct Home: View {
         //MARK: - Add Button
         .overlay (
             Button {
-                
+                viewModel.addNewTask.toggle()
             } label: {
                 Image(systemName: "plus")
                     .foregroundStyle(.white)
@@ -81,6 +81,9 @@ struct Home: View {
             
             , alignment: .bottomTrailing
         )
+        .sheet(isPresented: $viewModel.addNewTask) {
+            NewTaskView()
+        }
 
     }
     

@@ -17,7 +17,10 @@ final class TaskViewModel: ObservableObject {
     @Published var currentDay: Date = Date()
     //MARK: - Filtered Today Task
     @Published var filteredTask: [Task]?
-        
+    //MARK: - New Task View
+    @Published var addNewTask: Bool = false
+    
+    
     //MARK: - Init
     init() {
         fetchCurrentWeek()
