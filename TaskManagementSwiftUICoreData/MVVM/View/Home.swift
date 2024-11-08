@@ -137,8 +137,8 @@ struct Home: View {
                 // edit button for current and future tasks
                 VStack(spacing: 10) {
                     
-                    //Esli task date compare (Сравнивает другую дату с этой.) -> ordered (Левый операнд больше правого.) i func opredelyauchiy tekuchuu datu to budet i knopka pensil kotray nazanachit etu task v edit task v viewmodel i otkriet view kotoraya bobavlyaet task , no etim budet redaktirovat ego
-                    if task.taskDate?.compare(Date()) == .orderedDescending || viewModel.isToday(date: task.taskDate ?? Date()) {
+                    //1. Esli task date compare (Сравнивает другую дату с этой.) -> ordered (Левый операнд больше правого.) -> i esli eto current data v task e , a esli on mennche to pencil nebudet
+                    if task.taskDate?.compare(Date()) == .orderedDescending || Calendar.current.isDateInToday(task.taskDate ?? Date()) {
                         Button {
                             viewModel.editTask = task
                             viewModel.addNewTask.toggle()

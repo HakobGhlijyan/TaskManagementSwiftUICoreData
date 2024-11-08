@@ -60,7 +60,8 @@ final class TaskViewModel: ObservableObject {
         let calender = Calendar.current
         let hour = calender.component(.hour, from: date)
         let currentHour = calender.component(.hour, from: Date())
-        return hour == currentHour
+        let isToday = calender.isDateInToday(date)
+        return (hour == currentHour && isToday)
     }
     
 }

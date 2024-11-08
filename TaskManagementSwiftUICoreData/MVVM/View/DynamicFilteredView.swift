@@ -19,7 +19,7 @@ struct DynamicFilteredView<Content:View, T>: View where T: NSManagedObject {
         //MARK: - Predicate to filter current date Task
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: dateToFilter)
-        let tomorrow = calendar.date(byAdding: .day, value: 1, to: dateToFilter)!
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!
         
         //Filter key
         let filterKey = "taskDate"  // filter po date v baze coredata
