@@ -19,7 +19,8 @@ final class TaskViewModel: ObservableObject {
     @Published var filteredTask: [Task]?
     //MARK: - New Task View
     @Published var addNewTask: Bool = false
-    
+    //MARK: - Edit Task
+    @Published var editTask: Task?
     
     //MARK: - Init
     init() {

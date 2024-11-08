@@ -14,6 +14,9 @@ struct NewTaskView: View {
     //MARK: - CoreData Context
     @Environment(\.managedObjectContext) private var context
     
+    //MARK: - CoreData Context
+    @EnvironmentObject private var viewModel: TaskViewModel // 1. dlya polucheniya danix iz view model, i dlya varianta edit
+    
     //MARK: - Task Value
     @State private var taskTitle: String = ""
     @State private var taskDescription: String = ""
@@ -32,11 +35,14 @@ struct NewTaskView: View {
                 } header: {
                     Text("Task Description")
                 }
-                Section {
-                    DatePicker("", selection: $taskDate)
-                        .datePickerStyle(.graphical)
-                } header: {
-                    Text("Task Date")
+                //Disabled date for edit mode                2. esli edit task nil to data budet . a edit task eto eksemplyar task s ? znachenoem
+                if viewModel.editTask == nil {
+                    Section {
+                        DatePicker("", selection: $taskDate)
+                            .datePickerStyle(.graphical)
+                    } header: {
+                        Text("Task Date")
+                    }
                 }
 
             }
@@ -47,11 +53,15 @@ struct NewTaskView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        let task = Task(context: context)
-                        task.taskTitle = taskTitle
-                        task.taskDescription = taskDescription
-                        task.taskDate = taskDate
-                        
+                        if let task = viewModel.editTask {
+                            task.taskTitle = taskTitle
+                            task.taskDescription = taskDescription
+                        } else {
+                            let task = Task(context: context)
+                            task.taskTitle = taskTitle
+                            task.taskDescription = taskDescription
+                            task.taskDate = taskDate
+                        }
                         //save task in
                        do {
                            try context.save()
@@ -61,16 +71,21 @@ struct NewTaskView: View {
                         //close view
                         dismiss()
                     }
-                    .buttonStyle(.borderedProminent)
                     .disabled(taskTitle == "" || taskDescription == "")
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
                         dismiss()
                     }
-                    .buttonStyle(.borderedProminent).accentColor(.red)
                 }
                 
+            }
+            //Loading data is Task from edit mode
+            .onAppear {
+                if let task = viewModel.editTask {
+                    taskTitle = task.taskTitle ?? ""
+                    taskDescription = task.taskDescription ?? ""
+                }
             }
         }
     }

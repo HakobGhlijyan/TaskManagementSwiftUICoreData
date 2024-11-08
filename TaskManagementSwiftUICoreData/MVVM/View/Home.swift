@@ -13,6 +13,11 @@ struct Home: View {
     @Namespace private var namespaceAnimation
     @Environment(\.colorScheme) private var colorScheme
     
+    //MARK: - CoreData Context
+    @Environment(\.managedObjectContext) private var context
+    //MARK: - CoreData Context for edit button
+    @Environment(\.editMode) private var editButton
+    
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             LazyVStack(
@@ -75,15 +80,20 @@ struct Home: View {
                 Image(systemName: "plus")
                     .foregroundStyle(.white)
                     .padding()
-                    .background(.black, in: Circle())
+                    .background(.primary, in: Circle())
             }
             .padding()
             
             , alignment: .bottomTrailing
         )
         .sheet(isPresented: $viewModel.addNewTask) {
+            // clear edit data
+            viewModel.editTask = nil
+        } content: {
             NewTaskView()
+                .environmentObject(viewModel)
         }
+//IZMENIM SHHET NA TO CHOT ON POLUSHIT VIEWMODEL I V NEM BUDET LOGIC DLYA EDIT I ADD VARIANTOV
 
     }
     
@@ -97,16 +107,8 @@ struct Home: View {
             .hLeading()
             .foregroundStyle(.primary)
             
-            Button {
-                
-            } label: {
-                Image("Profile")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 45, height: 45)
-                    .clipShape(Circle())
-            }
-
+            //MARK: - Edit Button
+            EditButton()
         }
         .padding()
         .padding(.top, getSafeArea().top)
@@ -128,23 +130,58 @@ struct Home: View {
 
     //MARK: - Task Card View
     @ViewBuilder func TaskCardView(task: Task) -> some View {
-        HStack(alignment: .top, spacing: 30.0) {
-            //1
-            VStack(spacing: 10.0) {
-                Circle()
-                    .fill(viewModel.isCurrentHour(date: task.taskDate ?? Date()) ? .black : .clear)
-                    .frame(width: 15, height: 15)
-                    .background(
-                        Circle()
-                            .stroke(.black, lineWidth: 1)
-                            .padding(-3)
-                    )
-                    .scaleEffect(!viewModel.isCurrentHour(date: task.taskDate ?? Date()) ? 0.8 : 1 )
-                
-                Rectangle()
-                    .fill(.primary)
-                    .frame(width: 3)
+        HStack(alignment: editButton?.wrappedValue == .active ? .center : .top, spacing: 30.0) {
+            
+            //1 if edit mode enable then showing delet button
+            if editButton?.wrappedValue == .active {
+                // edit button for current and future tasks
+                VStack(spacing: 10) {
+                    
+                    //Esli task date compare (Сравнивает другую дату с этой.) -> ordered (Левый операнд больше правого.) i func opredelyauchiy tekuchuu datu to budet i knopka pensil kotray nazanachit etu task v edit task v viewmodel i otkriet view kotoraya bobavlyaet task , no etim budet redaktirovat ego
+                    if task.taskDate?.compare(Date()) == .orderedDescending || viewModel.isToday(date: task.taskDate ?? Date()) {
+                        Button {
+                            viewModel.editTask = task
+                            viewModel.addNewTask.toggle()
+                        } label: {
+                            Image(systemName: "pencil.circle.fill")
+                                .font(.title)
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                    
+                    Button {
+                        //MARK: - Deleting Task
+                        withAnimation {
+                            //delete
+                            context.delete(task)
+                            //save
+                            try? context.save()
+                        }
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .font(.title)
+                            .foregroundStyle(.red)
+                    }
+
+                }
+            } else {
+                VStack(spacing: 10.0) {
+                    Circle()
+                        .fill(viewModel.isCurrentHour(date: task.taskDate ?? Date()) ? (task.isCompleted ? .green : .black) : .clear)
+                        .frame(width: 15, height: 15)
+                        .background(
+                            Circle()
+                                .stroke(.black, lineWidth: 1)
+                                .padding(-3)
+                        )
+                        .scaleEffect(!viewModel.isCurrentHour(date: task.taskDate ?? Date()) ? 0.8 : 1 )
+                    
+                    Rectangle()
+                        .fill(.primary)
+                        .frame(width: 3)
+                }
             }
+            
             //2
             VStack {
                 //1
@@ -164,30 +201,44 @@ struct Home: View {
                 //2
                 if viewModel.isCurrentHour(date: task.taskDate ?? Date()) {
                     //MARK: - Team Members
-                    HStack(spacing: 0) {
-                        HStack(spacing: -10) {
-                            ForEach(viewModel.userImage, id: \.self) { user in
-                                Image(user)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                                    .background(
-                                        Circle().stroke(.black, lineWidth: 5)
-                                    )
-                            }
-                        }
-                        .hLeading()
+                    HStack(spacing: 12) {
+                        
+//                        HStack(spacing: -10) {
+//                            ForEach(viewModel.userImage, id: \.self) { user in
+//                                Image(user)
+//                                    .resizable()
+//                                    .scaledToFill()
+//                                    .frame(width: 40, height: 40)
+//                                    .clipShape(Circle())
+//                                    .background(
+//                                        Circle().stroke(.black, lineWidth: 5)
+//                                    )
+//                            }
+//                        }
+//                        .hLeading()
                         
                         //MARK: - Check Button
-                        Button {
-                            
-                        } label: {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(.black)
-                                .padding(10)
-                                .background(Color.white, in: Circle())
+                        if !task.isCompleted {
+                            Button {
+                                //MARK: - Updating Task
+                                withAnimation {
+                                    //updating status
+                                    task.isCompleted = true
+                                    //save
+                                    try? context.save()
+                                }
+                            } label: {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(.black)
+                                    .padding(10)
+                                    .background(Color.white, in: Circle())
+                            }
                         }
+                        
+                        Text(task.isCompleted ? "Marked as Completed" : "Mark Task as Completed")
+                            .font(.system(size: task.isCompleted ? 14 : 16, weight: .light))
+                            .foregroundStyle(task.isCompleted  ? . gray : .white)
+                            .hLeading()
                         
                     }
                     .padding(.top, 4)
@@ -203,6 +254,7 @@ struct Home: View {
                     .clipShape(.rect(cornerRadius: 20))
                     .opacity(viewModel.isCurrentHour(date: task.taskDate ?? Date()) ? 1 : 0)
             )
+            
         }
         .hLeading()
     }

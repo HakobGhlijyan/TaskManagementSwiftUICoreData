@@ -31,10 +31,14 @@ struct DynamicFilteredView<Content:View, T>: View where T: NSManagedObject {
             argumentArray: [today, tomorrow]
         )
         
-        
         // Инициализация запроса с помощью NSPredicate
         // Intializing Request With NSPredicate
-        _request = FetchRequest(entity: T.entity(), sortDescriptors: [], predicate: predicate)
+        // Add sort Descriptors
+        _request = FetchRequest(
+            entity: T.entity(),
+            sortDescriptors: [.init(keyPath: \Task.taskDate, ascending: true)],
+            predicate: predicate
+        )
         self.content = content
     }
     
