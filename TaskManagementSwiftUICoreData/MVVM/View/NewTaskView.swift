@@ -15,7 +15,7 @@ struct NewTaskView: View {
     @Environment(\.managedObjectContext) private var context
     
     //MARK: - CoreData Context
-    @EnvironmentObject private var viewModel: TaskViewModel // 1. dlya polucheniya danix iz view model, i dlya varianta edit
+    @EnvironmentObject private var viewModel: TaskViewModel
     
     //MARK: - Task Value
     @State private var taskTitle: String = ""
@@ -35,7 +35,7 @@ struct NewTaskView: View {
                 } header: {
                     Text("Task Description")
                 }
-                //Disabled date for edit mode                2. esli edit task nil to data budet . a edit task eto eksemplyar task s ? znachenoem
+                //Disabled date for edit mode               
                 if viewModel.editTask == nil {
                     Section {
                         DatePicker("", selection: $taskDate)

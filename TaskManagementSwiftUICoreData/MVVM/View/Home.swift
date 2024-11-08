@@ -93,8 +93,6 @@ struct Home: View {
             NewTaskView()
                 .environmentObject(viewModel)
         }
-//IZMENIM SHHET NA TO CHOT ON POLUSHIT VIEWMODEL I V NEM BUDET LOGIC DLYA EDIT I ADD VARIANTOV
-
     }
     
     //MARK: - Header View
@@ -131,13 +129,9 @@ struct Home: View {
     //MARK: - Task Card View
     @ViewBuilder func TaskCardView(task: Task) -> some View {
         HStack(alignment: editButton?.wrappedValue == .active ? .center : .top, spacing: 30.0) {
-            
             //1 if edit mode enable then showing delet button
             if editButton?.wrappedValue == .active {
-                // edit button for current and future tasks
                 VStack(spacing: 10) {
-                    
-                    //1. Esli task date compare (Сравнивает другую дату с этой.) -> ordered (Левый операнд больше правого.) -> i esli eto current data v task e , a esli on mennche to pencil nebudet
                     if task.taskDate?.compare(Date()) == .orderedDescending || Calendar.current.isDateInToday(task.taskDate ?? Date()) {
                         Button {
                             viewModel.editTask = task
@@ -202,21 +196,6 @@ struct Home: View {
                 if viewModel.isCurrentHour(date: task.taskDate ?? Date()) {
                     //MARK: - Team Members
                     HStack(spacing: 12) {
-                        
-//                        HStack(spacing: -10) {
-//                            ForEach(viewModel.userImage, id: \.self) { user in
-//                                Image(user)
-//                                    .resizable()
-//                                    .scaledToFill()
-//                                    .frame(width: 40, height: 40)
-//                                    .clipShape(Circle())
-//                                    .background(
-//                                        Circle().stroke(.black, lineWidth: 5)
-//                                    )
-//                            }
-//                        }
-//                        .hLeading()
-                        
                         //MARK: - Check Button
                         if !task.isCompleted {
                             Button {
@@ -263,28 +242,4 @@ struct Home: View {
 
 #Preview {
     Home()
-}
-
-
-//MARK: - UI design Helper function
-extension View {
-    // ALIGNMENT
-    func hLeading() -> some View {
-        self.frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    func hTrailing() -> some View {
-        self.frame(maxWidth: .infinity, alignment: .trailing)
-    }
-    
-    func hCenter() -> some View {
-        self.frame(maxWidth: .infinity, alignment: .center)
-    }
-    
-    //SAFE AREA
-    func getSafeArea() -> UIEdgeInsets {
-        guard let screen = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return .zero }
-        guard let safeArea = screen.windows.first?.safeAreaInsets else { return .zero }
-        return safeArea
-    }
 }

@@ -14,7 +14,6 @@ struct PersistenceController {
     static let preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
-
         do {
             try viewContext.save()
         } catch {

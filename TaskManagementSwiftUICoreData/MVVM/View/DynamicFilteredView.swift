@@ -21,8 +21,7 @@ struct DynamicFilteredView<Content:View, T>: View where T: NSManagedObject {
         let today = calendar.startOfDay(for: dateToFilter)
         let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!
         
-        //Filter key
-        let filterKey = "taskDate"  // filter po date v baze coredata
+        let filterKey = "taskDate"
         
         // This will fetch task between today and tommorow which is 24 HRS
         // Это приведет к получению задания в период с сегодняшнего по завтрашний день, то есть через 24 часа
